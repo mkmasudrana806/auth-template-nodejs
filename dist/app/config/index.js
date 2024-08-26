@@ -12,6 +12,7 @@ const config = {
     database_url: process.env.PORT,
     default_password: process.env.DEFAULT_PASSWORD,
     bcrypt_salt_rounds: process.env.BCRYPT_SALT_ROUNDS,
+    node_environment: process.env.NODE_ENVIRONMENT,
 };
 exports.default = config;
 // config will read your .env file, parse the contents, assign it to process.env, and return an Object with a parsed key containing the loaded content or an error key if it failed.

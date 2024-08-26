@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const routes_1 = require("./app/routes");
+const notFoundRoute_1 = __importDefault(require("./app/middlewares/notFoundRoute"));
+const globalErrorHandlerRoute_1 = __importDefault(require("./app/middlewares/globalErrorHandlerRoute"));
 const app = (0, express_1.default)();
 // parsers (middleware)
 app.use(express_1.default.json());
@@ -17,11 +19,7 @@ app.get("/", (req, res) => {
     res.send("Server is running...");
 });
 // not found route
-app.use("*", (req, res) => {
-    res.status(404).send("Route not found!");
-});
+app.use("*", notFoundRoute_1.default);
 // global error handler
-app.use((err, req, res, next) => {
-    res.status(500).json(err);
-});
+app.use(globalErrorHandlerRoute_1.default);
 exports.default = app;

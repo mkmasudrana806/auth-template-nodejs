@@ -1,7 +1,9 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import express from "express";
 import cors from "cors";
 import { ApiRoutes } from "./app/routes";
+import notFoundRoute from "./app/middlewares/notFoundRoute";
+import globalErrorHandler from "./app/middlewares/globalErrorHandlerRoute";
 
 const app = express();
 
@@ -18,14 +20,9 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 // not found route
-app.use("*", (req: Request, res: Response) => {
-  res.status(404).send("Route not found!");
-});
+app.use("*", notFoundRoute);
 
 // global error handler
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  
-  res.status(500).json(err);
-   
-});
+app.use(globalErrorHandler);
+
 export default app;

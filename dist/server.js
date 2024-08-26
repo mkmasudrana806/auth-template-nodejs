@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = __importDefault(require("./app"));
 const config_1 = __importDefault(require("./app/config"));
 const mongoose_1 = __importDefault(require("mongoose"));
+let server;
 // databas connection
 main().catch((err) => console.log(err));
 function main() {
@@ -22,13 +23,26 @@ function main() {
         try {
             yield mongoose_1.default.connect("mongodb://127.0.0.1:27017/auth");
             console.log("Database is connected!");
+            // app listening
+            server = app_1.default.listen(config_1.default.database_url, () => {
+                console.log(`app listening on port ${config_1.default.database_url}`);
+            });
         }
         catch (error) {
             console.log("Error connecting to Database!", error);
         }
     });
 }
-// app listening
-app_1.default.listen(config_1.default.database_url, () => {
-    console.log(`app listening on port ${config_1.default.database_url}`);
+// unhandledRejection error
+process.on("unhandledRejection", () => {
+    console.log("Unhandled rejection detected");
+    if (server) {
+        server.close(() => process.exit(1));
+    }
+    process.exit(1);
+});
+// uncaught exception handling
+process.on("uncaughtException", () => {
+    console.log("Uncaught exception detected");
+    process.exit(1);
 });

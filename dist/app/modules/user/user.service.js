@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserServices = void 0;
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = __importDefault(require("../../config"));
 const allowedFieldUpdatedData_1 = __importDefault(require("../../utils/allowedFieldUpdatedData"));
 const makeFlattenedObject_1 = __importDefault(require("../../utils/makeFlattenedObject"));
@@ -34,8 +35,12 @@ const createAnUserIntoDB = (payload) => __awaiter(void 0, void 0, void 0, functi
  * @return return all users
  */
 const getAllUsersFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
+    const jwtPayload = { email: "user@gmail.com", role: "user" };
+    const token = jsonwebtoken_1.default.sign(jwtPayload, config_1.default.jwt_access_secret, {
+        expiresIn: config_1.default.jwt_access_expires_in,
+    });
     const result = yield user_model_1.User.find({});
-    return result;
+    return token;
 });
 /**
  * -----------------  get me  -----------------

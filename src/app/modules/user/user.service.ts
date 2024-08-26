@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import config from "../../config";
 import makeAllowedFieldData from "../../utils/allowedFieldUpdatedData";
 import makeFlattenedObject from "../../utils/makeFlattenedObject";
@@ -23,8 +24,13 @@ const createAnUserIntoDB = async (payload: TUser) => {
  * @return return all users
  */
 const getAllUsersFromDB = async () => {
+  const jwtPayload = { email: "user@gmail.com", role: "user" };
+  const token = jwt.sign(jwtPayload, config.jwt_access_secret as string, {
+    expiresIn: config.jwt_access_expires_in,
+  });
+
   const result = await User.find({});
-  return result;
+  return token;
 };
 
 /**

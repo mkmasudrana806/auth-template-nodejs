@@ -2,11 +2,13 @@ import express from "express";
 import { UserControllers } from "./user.controller";
 import validateRequestData from "../../middlewares/validateRequest";
 import { UserValidations } from "./user.validation";
+import auth from "../../middlewares/auth";
 const router = express.Router();
 
 // create an user
 router.post(
   "/create-user",
+  auth("admin", "user"),
   validateRequestData(UserValidations.createUserValidationsSchema),
   UserControllers.createAnUser
 );

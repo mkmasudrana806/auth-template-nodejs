@@ -8,9 +8,10 @@ const express_1 = __importDefault(require("express"));
 const user_controller_1 = require("./user.controller");
 const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest"));
 const user_validation_1 = require("./user.validation");
+const auth_1 = __importDefault(require("../../middlewares/auth"));
 const router = express_1.default.Router();
 // create an user
-router.post("/create-user", (0, validateRequest_1.default)(user_validation_1.UserValidations.createUserValidationsSchema), user_controller_1.UserControllers.createAnUser);
+router.post("/create-user", (0, auth_1.default)("admin", "user"), (0, validateRequest_1.default)(user_validation_1.UserValidations.createUserValidationsSchema), user_controller_1.UserControllers.createAnUser);
 // get all users
 router.get("/", user_controller_1.UserControllers.getAllUsers);
 // get me route (get single user)

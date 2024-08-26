@@ -11,4 +11,12 @@ const user_validation_1 = require("./user.validation");
 const router = express_1.default.Router();
 // create an user
 router.post("/create-user", (0, validateRequest_1.default)(user_validation_1.UserValidations.createUserValidationsSchema), user_controller_1.UserControllers.createAnUser);
+// get all users
+router.get("/", user_controller_1.UserControllers.getAllUsers);
+// get me route (get single user)
+router.get("/getMe", user_controller_1.UserControllers.getMe);
+// delete an user
+router.delete("/:id", user_controller_1.UserControllers.deleteUser);
+// update an user
+router.patch("/:id", (0, validateRequest_1.default)(user_validation_1.UserValidations.updateUserValidationsSchema), user_controller_1.UserControllers.updateUser);
 exports.UserRoutes = router;

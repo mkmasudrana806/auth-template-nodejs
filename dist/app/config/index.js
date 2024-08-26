@@ -11,7 +11,7 @@ const result = dotenv_1.default.config({ path: path_1.default.resolve(process.cw
 const config = {
     database_url: process.env.PORT,
     default_password: process.env.DEFAULT_PASSWORD,
-    bcrypt_salt: process.env.BCRYPT_SALT,
+    bcrypt_salt_rounds: process.env.BCRYPT_SALT_ROUNDS,
 };
 exports.default = config;
 // config will read your .env file, parse the contents, assign it to process.env, and return an Object with a parsed key containing the loaded content or an error key if it failed.

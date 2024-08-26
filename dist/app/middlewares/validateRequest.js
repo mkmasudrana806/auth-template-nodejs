@@ -8,23 +8,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const asyncHandler_1 = __importDefault(require("../utils/asyncHandler"));
 /**
  * ---------------------- validate Client Request Data ------------------
  * @param schema any zod validation schemas
  * @returns return parsed data to the next middleware
  */
 const validateRequestData = (schema) => {
-    return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        try {
-            yield schema.parseAsync({
-                body: req.body,
-            });
-            next();
-        }
-        catch (error) {
-            next(error);
-        }
-    });
+    return (0, asyncHandler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        yield schema.parseAsync({
+            body: req.body,
+        });
+        next();
+    }));
 };
 exports.default = validateRequestData;

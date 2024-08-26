@@ -11,4 +11,20 @@ router.post(
   UserControllers.createAnUser
 );
 
+// get all users
+router.get("/", UserControllers.getAllUsers);
+
+// get me route (get single user)
+router.get("/getMe", UserControllers.getMe);
+
+// delete an user
+router.delete("/:id", UserControllers.deleteUser);
+
+// update an user
+router.patch(
+  "/:id",
+  validateRequestData(UserValidations.updateUserValidationsSchema),
+  UserControllers.updateUser
+);
+
 export const UserRoutes = router;

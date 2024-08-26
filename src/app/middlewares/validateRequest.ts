@@ -1,5 +1,6 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import { AnyZodObject } from "zod";
+import asyncHanlder from "../utils/asyncHandler";
 
 /**
  * ---------------------- validate Client Request Data ------------------
@@ -7,16 +8,14 @@ import { AnyZodObject } from "zod";
  * @returns return parsed data to the next middleware
  */
 const validateRequestData = (schema: AnyZodObject) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  return asyncHanlder(
+    async (req: Request, res: Response, next: NextFunction) => {
       await schema.parseAsync({
         body: req.body,
       });
       next();
-    } catch (error) {
-      next(error);
     }
-  };
+  );
 };
 
 export default validateRequestData;

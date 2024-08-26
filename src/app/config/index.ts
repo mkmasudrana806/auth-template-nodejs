@@ -8,7 +8,7 @@ const result = dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 const config = {
   database_url: process.env.PORT,
   default_password: process.env.DEFAULT_PASSWORD,
-  bcrypt_salt: process.env.BCRYPT_SALT,
+  bcrypt_salt_rounds: process.env.BCRYPT_SALT_ROUNDS,
 };
 
 export default config;

@@ -19,29 +19,54 @@ const userNameValidationSchema = zod_1.default.object({
 // create user validations schema
 const createUserValidationsSchema = zod_1.default.object({
     body: zod_1.default.object({
+        name: userNameValidationSchema,
+        email: zod_1.default
+            .string({
+            required_error: "Email is required",
+        })
+            .email("Invalid email address"),
         password: zod_1.default.string().optional(),
-        user: zod_1.default.object({
-            name: userNameValidationSchema,
-            email: zod_1.default
-                .string({
-                required_error: "Email is required",
-            })
-                .email("Invalid email address"),
-            age: zod_1.default.number({
-                invalid_type_error: "Age should be a number",
-                required_error: "Age is required",
-            }),
-            contact: zod_1.default.string({
-                invalid_type_error: "Contact should be a string",
-                required_error: "Contact number is required",
-            }),
-            address: zod_1.default.string({
-                invalid_type_error: "Address should be a string",
-                required_error: "Address is required",
-            }),
+        age: zod_1.default.number({
+            invalid_type_error: "Age should be a number",
+            required_error: "Age is required",
         }),
+        contact: zod_1.default.string({
+            invalid_type_error: "Contact should be a string",
+            required_error: "Contact number is required",
+        }),
+        address: zod_1.default.string({
+            invalid_type_error: "Address should be a string",
+            required_error: "Address is required",
+        }),
+    }),
+});
+// update user name validation schema
+const updateUserNameValidationSchema = userNameValidationSchema.partial();
+// update user validations schema
+const updateUserValidationsSchema = zod_1.default.object({
+    body: zod_1.default.object({
+        name: updateUserNameValidationSchema.optional(),
+        age: zod_1.default
+            .number({
+            invalid_type_error: "Age should be a number",
+            required_error: "Age is required",
+        })
+            .optional(),
+        contact: zod_1.default
+            .string({
+            invalid_type_error: "Contact should be a string",
+            required_error: "Contact number is required",
+        })
+            .optional(),
+        address: zod_1.default
+            .string({
+            invalid_type_error: "Address should be a string",
+            required_error: "Address is required",
+        })
+            .optional(),
     }),
 });
 exports.UserValidations = {
     createUserValidationsSchema,
+    updateUserValidationsSchema,
 };

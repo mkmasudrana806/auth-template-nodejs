@@ -10,6 +10,7 @@ export type TUser = {
   email: string;
   password: string;
   age: number;
+  gender: "male" | "female" | "others";
   contact: string;
   address: string;
   role: "user" | "admin";

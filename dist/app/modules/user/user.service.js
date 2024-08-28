@@ -13,20 +13,30 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserServices = void 0;
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = __importDefault(require("../../config"));
 const allowedFieldUpdatedData_1 = __importDefault(require("../../utils/allowedFieldUpdatedData"));
 const makeFlattenedObject_1 = __importDefault(require("../../utils/makeFlattenedObject"));
 const user_constant_1 = require("./user.constant");
 const user_model_1 = require("./user.model");
+const AppError_1 = __importDefault(require("../../utils/AppError"));
+const http_status_1 = __importDefault(require("http-status"));
+const sendImageToCloudinary_1 = __importDefault(require("../../utils/sendImageToCloudinary"));
 /**
  * ----------------------- Create an user----------------------
+ * @param file image file to upload (optional)
  * @param payload new user data
  * @returns return newly created user
  */
-const createAnUserIntoDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+const createAnUserIntoDB = (file, payload) => __awaiter(void 0, void 0, void 0, function* () {
     // set default password if password is not provided
     payload.password = payload.password || config_1.default.default_password;
+    // set profileImg if image is provided
+    if (file) {
+        const imageName = `${payload.email}-${payload.name.firstName}`;
+        const path = file.path;
+        const uploadedImage = yield (0, sendImageToCloudinary_1.default)(path, imageName);
+        payload.profileImg = uploadedImage.secure_url;
+    }
     const result = yield user_model_1.User.create(payload);
     return result;
 });
@@ -35,21 +45,17 @@ const createAnUserIntoDB = (payload) => __awaiter(void 0, void 0, void 0, functi
  * @return return all users
  */
 const getAllUsersFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
-    const jwtPayload = { email: "user@gmail.com", role: "user" };
-    const token = jsonwebtoken_1.default.sign(jwtPayload, config_1.default.jwt_access_secret, {
-        expiresIn: config_1.default.jwt_access_expires_in,
-    });
     const result = yield user_model_1.User.find({});
-    return token;
+    return result;
 });
 /**
  * -----------------  get me  -----------------
+ * @param email email address
  * @param role user role
- * @param id mongoose id of an user
- * @returns own user data
+ * @returns own user data based on jwt payload data
  */
-const getMe = (role, id) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield user_model_1.User.findOne({ _id: id, role: role });
+const getMe = (email, role) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield user_model_1.User.findOne({ email, role });
     return result;
 });
 /**
@@ -65,14 +71,57 @@ const deleteUserFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () 
  * --------------- update an user form db ----------------
  * @param id user id
  * @param payload update user data
+ * @featurs admin can change own and user data. user can change own data only
  * @returns return updated user data
  */
-const updateUserIntoDB = (id, payload) => __awaiter(void 0, void 0, void 0, function* () {
+const updateUserIntoDB = (currentUser, id, payload) => __awaiter(void 0, void 0, void 0, function* () {
+    // check if the user exists not deleted or blocked
+    const user = yield user_model_1.User.findById(id);
+    if (!user) {
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Requested user not found!");
+    }
+    if (user.isDeleted) {
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, "User is already deleted!");
+    }
+    if (user.status === "blocked") {
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, "User is already blocked!");
+    }
+    // check if current logged user and request not same and role is user.
+    // means an user cna not update another user data
+    if (currentUser.email !== (user === null || user === void 0 ? void 0 : user.email) && currentUser.role === "user") {
+        throw new AppError_1.default(http_status_1.default.UNAUTHORIZED, "You are not authorized!");
+    }
     // filter allowed fileds only
     const allowedFieldData = (0, allowedFieldUpdatedData_1.default)(user_constant_1.allowedFieldsToUpdate, payload);
     // make flattened object
     const flattenedData = (0, makeFlattenedObject_1.default)(allowedFieldData);
-    const result = yield user_model_1.User.findByIdAndUpdate(id, flattenedData, { new: true });
+    const result = yield user_model_1.User.findByIdAndUpdate(id, flattenedData, {
+        new: true,
+        runValidators: true,
+    });
+    return result;
+});
+/**
+ * -------------------- change user status ----------------------
+ * @param id user id
+ * @param payload user status payload
+ * @validatios check if the user exists,not deleted. only admin can change user status
+ * @note admin can not change own status. admin can change only user status
+ * @returns return updated user status
+ */
+const changeUserStatusIntoDB = (id, payload) => __awaiter(void 0, void 0, void 0, function* () {
+    // check if user exists, not deleted. find user that has role as user
+    const user = yield user_model_1.User.findOne({ _id: id, role: "user" });
+    if (!user) {
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, "User is not found!");
+    }
+    if (user.isDeleted) {
+        throw new AppError_1.default(http_status_1.default.FORBIDDEN, "User is already deleted!");
+    }
+    const result = yield user_model_1.User.findByIdAndUpdate(id, payload, {
+        new: true,
+        runValidators: true,
+    });
     return result;
 });
 exports.UserServices = {
@@ -81,4 +130,5 @@ exports.UserServices = {
     getMe,
     deleteUserFromDB,
     updateUserIntoDB,
+    changeUserStatusIntoDB,
 };

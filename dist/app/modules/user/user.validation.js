@@ -66,7 +66,16 @@ const updateUserValidationsSchema = zod_1.default.object({
             .optional(),
     }),
 });
+// change user status schema
+const changeUserStatusSchema = zod_1.default.object({
+    body: zod_1.default.object({
+        status: zod_1.default.enum(["active", "blocked"], {
+            required_error: "User status is required",
+        }),
+    }),
+});
 exports.UserValidations = {
     createUserValidationsSchema,
     updateUserValidationsSchema,
+    changeUserStatusSchema,
 };

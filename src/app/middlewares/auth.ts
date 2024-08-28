@@ -6,13 +6,21 @@ import config from "../config";
 import { User } from "../modules/user/user.model";
 import asyncHanlder from "../utils/asyncHandler";
 
+/**
+ * ------------------- auth --------------------
+ * @param requiredRoles user role like 'user', 'admin',
+ * @returns return to next middleware and set user to Request object
+ */
 const auth = (...requiredRoles: string[]) => {
   return asyncHanlder(
     async (req: Request, res: Response, next: NextFunction) => {
       const token = req.headers.authorization;
       // check if token is provided to headers
       if (!token) {
-        throw new AppError(httpStatus.UNAUTHORIZED, "token is not given");
+        throw new AppError(
+          httpStatus.UNAUTHORIZED,
+          "Unauthorized access!, token is missing!"
+        );
       }
 
       // decoded the token
@@ -23,13 +31,10 @@ const auth = (...requiredRoles: string[]) => {
           config.jwt_access_secret as string
         ) as JwtPayload;
       } catch (error) {
-        throw new AppError(
-          httpStatus.UNAUTHORIZED,
-          "Token is unable to decoded"
-        );
+        throw new AppError(httpStatus.UNAUTHORIZED, "Unauthorized access!");
       }
 
-      const { email, role } = decoded;
+      const { email, role, iat } = decoded;
       // check if the user exits and not blocked and not deleted
       const user = await User.findOne({ email, role });
       if (!user) {
@@ -48,6 +53,20 @@ const auth = (...requiredRoles: string[]) => {
         throw new AppError(
           httpStatus.NOT_FOUND,
           "Authorized user is already deleted!"
+        );
+      }
+
+      // check if the jwt issued before the password change
+      if (
+        user.passwordChangedAt &&
+        User.isJWTIssuedBeforePasswordChange(
+          user.passwordChangedAt,
+          iat as number
+        )
+      ) {
+        throw new AppError(
+          httpStatus.UNAUTHORIZED,
+          "You are not authorized, your token is invalid!"
         );
       }
 

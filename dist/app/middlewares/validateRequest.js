@@ -15,13 +15,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const asyncHandler_1 = __importDefault(require("../utils/asyncHandler"));
 /**
  * ---------------------- validate Client Request Data ------------------
- * @param schema any zod validation schemas
+ * @param schema any zod validation schema
  * @returns return parsed data to the next middleware
  */
 const validateRequestData = (schema) => {
     return (0, asyncHandler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         yield schema.parseAsync({
             body: req.body,
+            cookies: req.cookies,
         });
         next();
     }));

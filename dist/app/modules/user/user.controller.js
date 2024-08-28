@@ -19,7 +19,7 @@ const asyncHandler_1 = __importDefault(require("../../utils/asyncHandler"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 // ------------------- create an user -------------------
 const createAnUser = (0, asyncHandler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield user_service_1.UserServices.createAnUserIntoDB(req.body);
+    const result = yield user_service_1.UserServices.createAnUserIntoDB(req.file, req.body);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         success: true,
@@ -27,7 +27,7 @@ const createAnUser = (0, asyncHandler_1.default)((req, res, next) => __awaiter(v
         data: result,
     });
 }));
-// ------------------- create an user -------------------
+// ------------------- get all users -------------------
 const getAllUsers = (0, asyncHandler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield user_service_1.UserServices.getAllUsersFromDB();
     (0, sendResponse_1.default)(res, {
@@ -39,7 +39,8 @@ const getAllUsers = (0, asyncHandler_1.default)((req, res, next) => __awaiter(vo
 }));
 // ------------------- get me -------------------
 const getMe = (0, asyncHandler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield user_service_1.UserServices.getMe("user", "");
+    const { email, role } = req.user;
+    const result = yield user_service_1.UserServices.getMe(email, role);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         success: true,
@@ -59,11 +60,22 @@ const deleteUser = (0, asyncHandler_1.default)((req, res, next) => __awaiter(voi
 }));
 // ------------------- update an user -------------------
 const updateUser = (0, asyncHandler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield user_service_1.UserServices.updateUserIntoDB(req.params.id, req.body);
+    const currentUser = req.user;
+    const result = yield user_service_1.UserServices.updateUserIntoDB(currentUser, req.params.id, req.body);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         success: true,
         message: "User is updated successfully",
+        data: result,
+    });
+}));
+// ------------------- change user status -------------------
+const changeUserStatus = (0, asyncHandler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield user_service_1.UserServices.changeUserStatusIntoDB(req.params.id, req.body);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: "User status is changed successfull",
         data: result,
     });
 }));
@@ -73,4 +85,5 @@ exports.UserControllers = {
     getMe,
     deleteUser,
     updateUser,
+    changeUserStatus,
 };

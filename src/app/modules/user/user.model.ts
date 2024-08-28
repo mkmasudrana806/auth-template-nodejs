@@ -1,6 +1,6 @@
 import { model, Schema } from "mongoose";
 import bcrypt from "bcrypt";
-import { TUser, TUserName } from "./user.interface";
+import { IUser, TUser, TUserName } from "./user.interface";
 import config from "../../config";
 
 const userNameSchema = new Schema<TUserName>({
@@ -10,7 +10,7 @@ const userNameSchema = new Schema<TUserName>({
 });
 
 // create user schema
-const userSchema = new Schema<TUser>(
+const userSchema = new Schema<TUser, IUser>(
   {
     name: { type: userNameSchema, required: true },
     email: {
@@ -21,8 +21,10 @@ const userSchema = new Schema<TUser>(
     password: {
       type: String,
       required: true,
-      select: 0,
+      select: 1,
     },
+    needsPasswordChange: { type: Boolean, required: true, default: true },
+    passwordChangedAt: { type: Date },
     age: { type: Number, required: true },
     gender: {
       type: String,
@@ -43,6 +45,7 @@ const userSchema = new Schema<TUser>(
       enum: ["active", "blocked"],
       default: "active",
     },
+    profileImg: { type: String },
     isDeleted: { type: Boolean, required: true, default: false },
   },
   {
@@ -50,7 +53,7 @@ const userSchema = new Schema<TUser>(
   }
 );
 
-// pre middleware hook to hash password
+// ----------- pre middleware hook to hash password -----------
 userSchema.pre("save", async function (next) {
   const user = this;
   user.password = await bcrypt.hash(
@@ -60,17 +63,42 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-// hide password to client response
+// ----------- hide password to client response -----------
 userSchema.post("save", function (doc) {
   doc.password = "";
 });
 
-// hide password to client response
+// ----------- hide password to client response -----------
 userSchema.post("find", function (docs) {
   docs.forEach((doc: TUser) => {
     doc.password = "";
   });
 });
 
+// ----------- hide password to client response -----------
+userSchema.post("findOneAndUpdate", function (doc) {
+  doc.password = "";
+});
+
+// ----------- isPasswordMatch statics methods -----------
+userSchema.statics.isPasswordMatch = async function (
+  plainPassword: string,
+  hashedPassword: string
+) {
+  const result = await bcrypt.compare(plainPassword, hashedPassword);
+  return result;
+};
+
+// ----------- check is jwt issued before password change -----------
+userSchema.statics.isJWTIssuedBeforePasswordChange = function (
+  passwordChangedTimestamp: Date,
+  jwtIssuedtimestamp: number
+) {
+  // UTC datetime to milliseconds
+  const passwordChangedtime =
+    new Date(passwordChangedTimestamp).getTime() / 1000;
+  return passwordChangedtime > jwtIssuedtimestamp;
+};
+
 // make a model and export
-export const User = model<TUser>("User", userSchema);
+export const User = model<TUser, IUser>("User", userSchema);

@@ -65,7 +65,17 @@ const updateUserValidationsSchema = z.object({
   }),
 });
 
+// change user status schema
+const changeUserStatusSchema = z.object({
+  body: z.object({
+    status: z.enum(["active", "blocked"], {
+      required_error: "User status is required",
+    }),
+  }),
+});
+
 export const UserValidations = {
   createUserValidationsSchema,
   updateUserValidationsSchema,
+  changeUserStatusSchema,
 };

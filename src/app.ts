@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import express from "express";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import { ApiRoutes } from "./app/routes";
 import notFoundRoute from "./app/middlewares/notFoundRoute";
@@ -9,7 +10,8 @@ const app = express();
 
 // parsers (middleware)
 app.use(express.json());
-app.use(cors({ origin: "http://localhost:5000" }));
+app.use(cors({ origin: "http://localhost:5000" })); // your client url
+app.use(cookieParser());
 
 // api routes (middleware)
 app.use("/api", ApiRoutes);

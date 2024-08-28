@@ -24,29 +24,34 @@ const globalErrorHandler = (err, req, res, next) => {
         message = simplifiedError.message;
         errorSources = simplifiedError.errorSources;
     }
+    // handle mongoose validation errors
     else if (err instanceof mongoose_1.Error.ValidationError) {
         const simplifiedError = (0, handleValidationError_1.default)(err);
         statusCode = simplifiedError.statusCode;
         message = simplifiedError.message;
         errorSources = simplifiedError.errorSources;
     }
+    // handle mongodb cast errors
     else if (err instanceof mongoose_1.Error.CastError) {
         const simplifiedError = (0, handleCastError_1.default)(err);
         statusCode = simplifiedError.statusCode;
         message = simplifiedError.message;
         errorSources = simplifiedError.errorSources;
     }
+    // handle duplicate key errors
     else if (err.code === 11000) {
         const simplifiedError = (0, handleDuplicateKeyError_1.default)(err);
         statusCode = simplifiedError.statusCode;
         message = simplifiedError.message;
         errorSources = simplifiedError.errorSources;
     }
+    // handle AppError class errors
     else if (err instanceof AppError_1.default) {
         statusCode = err.statusCode;
         message = err.message;
         errorSources = [{ path: "", message: err === null || err === void 0 ? void 0 : err.message }];
     }
+    // handle express Error errors
     else if (err instanceof mongoose_1.Error) {
         message = err.message;
         errorSources = [{ path: "", message: err === null || err === void 0 ? void 0 : err.message }];
@@ -55,7 +60,6 @@ const globalErrorHandler = (err, req, res, next) => {
         success: false,
         message,
         errorSources,
-        err,
         stack: config_1.default.node_environment === "development" ? err.stack : "",
     });
 };

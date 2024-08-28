@@ -32,8 +32,10 @@ const userSchema = new mongoose_1.Schema({
     password: {
         type: String,
         required: true,
-        select: 0,
+        select: 1,
     },
+    needsPasswordChange: { type: Boolean, required: true, default: true },
+    passwordChangedAt: { type: Date },
     age: { type: Number, required: true },
     gender: {
         type: String,
@@ -54,11 +56,12 @@ const userSchema = new mongoose_1.Schema({
         enum: ["active", "blocked"],
         default: "active",
     },
+    profileImg: { type: String },
     isDeleted: { type: Boolean, required: true, default: false },
 }, {
     timestamps: true,
 });
-// pre middleware hook to hash password
+// ----------- pre middleware hook to hash password -----------
 userSchema.pre("save", function (next) {
     return __awaiter(this, void 0, void 0, function* () {
         const user = this;
@@ -66,15 +69,32 @@ userSchema.pre("save", function (next) {
         next();
     });
 });
-// hide password to client response
+// ----------- hide password to client response -----------
 userSchema.post("save", function (doc) {
     doc.password = "";
 });
-// hide password to client response
+// ----------- hide password to client response -----------
 userSchema.post("find", function (docs) {
     docs.forEach((doc) => {
         doc.password = "";
     });
 });
+// ----------- hide password to client response -----------
+userSchema.post("findOneAndUpdate", function (doc) {
+    doc.password = "";
+});
+// ----------- isPasswordMatch statics methods -----------
+userSchema.statics.isPasswordMatch = function (plainPassword, hashedPassword) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const result = yield bcrypt_1.default.compare(plainPassword, hashedPassword);
+        return result;
+    });
+};
+// ----------- check is jwt issued before password change -----------
+userSchema.statics.isJWTIssuedBeforePasswordChange = function (passwordChangedTimestamp, jwtIssuedtimestamp) {
+    // UTC datetime to milliseconds
+    const passwordChangedtime = new Date(passwordChangedTimestamp).getTime() / 1000;
+    return passwordChangedtime > jwtIssuedtimestamp;
+};
 // make a model and export
 exports.User = (0, mongoose_1.model)("User", userSchema);

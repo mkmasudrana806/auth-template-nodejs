@@ -2,13 +2,14 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import config from "../../config";
 import makeAllowedFieldData from "../../utils/allowedFieldUpdatedData";
 import makeFlattenedObject from "../../utils/makeFlattenedObject";
-import { allowedFieldsToUpdate } from "./user.constant";
+import { allowedFieldsToUpdate, searchableFields } from "./user.constant";
 import { TUser } from "./user.interface";
 import { User } from "./user.model";
 import AppError from "../../utils/AppError";
 import httpStatus from "http-status";
 import { TfileUpload } from "../../interface/fileUploadType";
 import sendImageToCloudinary from "../../utils/sendImageToCloudinary";
+import QueryBuilder from "../../queryBuilder/queryBuilder";
 
 /**
  * ----------------------- Create an user----------------------
@@ -36,9 +37,16 @@ const createAnUserIntoDB = async (file: TfileUpload, payload: TUser) => {
  * ----------------------- get all users ----------------------
  * @return return all users
  */
-const getAllUsersFromDB = async () => {
-  const result = await User.find({});
-  return result;
+const getAllUsersFromDB = async (query: Record<string, any>) => {
+  const userQuery = new QueryBuilder(User.find(), query)
+    .search(searchableFields)
+    .filter()
+    .sort()
+    .paginate()
+    .fieldsLimiting();
+  const meta = await userQuery.countTotal();
+  const result = await userQuery.modelQuery;
+  return { meta, result };
 };
 
 /**

@@ -29,11 +29,12 @@ const createAnUser = (0, asyncHandler_1.default)((req, res, next) => __awaiter(v
 }));
 // ------------------- get all users -------------------
 const getAllUsers = (0, asyncHandler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield user_service_1.UserServices.getAllUsersFromDB();
+    const { meta, result } = yield user_service_1.UserServices.getAllUsersFromDB(req.query);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         success: true,
         message: "All users retrieved successfully",
+        meta: meta,
         data: result,
     });
 }));

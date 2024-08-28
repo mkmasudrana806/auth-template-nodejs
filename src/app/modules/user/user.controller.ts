@@ -21,12 +21,13 @@ const createAnUser = asyncHanlder(async (req, res, next) => {
 
 // ------------------- get all users -------------------
 const getAllUsers = asyncHanlder(async (req, res, next) => {
-  const result = await UserServices.getAllUsersFromDB();
+  const { meta, result } = await UserServices.getAllUsersFromDB(req.query);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "All users retrieved successfully",
+    meta: meta,
     data: result,
   });
 });

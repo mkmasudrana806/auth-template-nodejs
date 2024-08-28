@@ -21,6 +21,7 @@ const user_model_1 = require("./user.model");
 const AppError_1 = __importDefault(require("../../utils/AppError"));
 const http_status_1 = __importDefault(require("http-status"));
 const sendImageToCloudinary_1 = __importDefault(require("../../utils/sendImageToCloudinary"));
+const queryBuilder_1 = __importDefault(require("../../queryBuilder/queryBuilder"));
 /**
  * ----------------------- Create an user----------------------
  * @param file image file to upload (optional)
@@ -44,9 +45,16 @@ const createAnUserIntoDB = (file, payload) => __awaiter(void 0, void 0, void 0, 
  * ----------------------- get all users ----------------------
  * @return return all users
  */
-const getAllUsersFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield user_model_1.User.find({});
-    return result;
+const getAllUsersFromDB = (query) => __awaiter(void 0, void 0, void 0, function* () {
+    const userQuery = new queryBuilder_1.default(user_model_1.User.find(), query)
+        .search(user_constant_1.searchableFields)
+        .filter()
+        .sort()
+        .paginate()
+        .fieldsLimiting();
+    const meta = yield userQuery.countTotal();
+    const result = yield userQuery.modelQuery;
+    return { meta, result };
 });
 /**
  * -----------------  get me  -----------------
